@@ -26,11 +26,11 @@ func main() {
 
 	for _, container := range containers {
 		cont := []string{
-			container.ID,
+			container.ID[:12],
 			container.Names[0],
 			container.Image,
-			container.Command,
-			string(time.Unix(container.Created, 0)),
+			container.State + ", " + container.Status,
+			string(time.Unix(container.Created, 0).String()),
 		}
 
 		container_table_rows = append(container_table_rows, cont)
@@ -47,8 +47,19 @@ func main() {
 	docker_ps_table.X = 0
 	docker_ps_table.Width = ui.TermWidth()
 	docker_ps_table.Height = ui.TermHeight()
+	docker_ps_table.BorderLabel = "Containers"
+	docker_ps_table.BorderLabelFg = ui.ColorWhite
+	docker_ps_table.BorderFg = ui.ColorGreen
 
-	ui.Render(docker_ps_table)
+	ui.Body.AddRows(
+		ui.NewRow(
+			ui.NewCol(8, 0, docker_ps_table),
+		),
+	)
+
+	ui.Body.Align()
+
+	ui.Render(ui.Body)
 
 	ui.Handle("/sys/kbd/q", func(ui.Event) {
 		ui.StopLoop()
