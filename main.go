@@ -1,7 +1,9 @@
 package main
 
-import ui "github.com/airking05/termui"
 import (
+	"time"
+
+	ui "github.com/airking05/termui"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"golang.org/x/net/context"
@@ -19,13 +21,16 @@ func main() {
 	}
 
 	container_table_rows := [][]string{
-		[]string{"IDs", "Container name"},
+		[]string{"ID", "Name", "Image", "Command", "Created"},
 	}
 
 	for _, container := range containers {
 		cont := []string{
 			container.ID,
 			container.Names[0],
+			container.Image,
+			container.Command,
+			string(time.Unix(container.Created, 0)),
 		}
 
 		container_table_rows = append(container_table_rows, cont)
@@ -40,8 +45,8 @@ func main() {
 	docker_ps_table.Rows = container_table_rows
 	docker_ps_table.Y = 0
 	docker_ps_table.X = 0
-	docker_ps_table.Width = 200
-	docker_ps_table.Height = 200
+	docker_ps_table.Width = ui.TermWidth()
+	docker_ps_table.Height = ui.TermHeight()
 
 	ui.Render(docker_ps_table)
 
