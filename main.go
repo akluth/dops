@@ -18,12 +18,17 @@ func main() {
 		panic(err)
 	}
 
-	var container_ids []string
-	var container_names []string
+	container_table_rows := [][]string{
+		[]string{"IDs", "Container name"},
+	}
 
 	for _, container := range containers {
-		container_ids = append(container_ids, container.ID)
-		container_names = append(container_names, container.Names[0])
+		cont := []string{
+			container.ID,
+			container.Names[0],
+		}
+
+		container_table_rows = append(container_table_rows, cont)
 	}
 
 	if err := ui.Init(); err != nil {
@@ -31,14 +36,8 @@ func main() {
 	}
 	defer ui.Close()
 
-	table_rows := [][]string{
-		[]string{"IDs", "Container name"},
-		container_ids,
-		container_names,
-	}
-
 	docker_ps_table := ui.NewTable()
-	docker_ps_table.Rows = table_rows
+	docker_ps_table.Rows = container_table_rows
 	docker_ps_table.Y = 0
 	docker_ps_table.X = 0
 	docker_ps_table.Width = 200
