@@ -1,19 +1,29 @@
 package main
 
-import "os/exec"
 import ui "github.com/airking05/termui"
+import (
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+	"golang.org/x/net/context"
+)
 
 func main() {
-
-	app := "docker"
-	arg := "ps"
-
-	cmd := exec.Command(app, arg)
-	stdout, err := cmd.Output()
-
+	cli, err := client.NewEnvClient()
 	if err != nil {
-		println(err.Error())
-		return
+		panic(err)
+	}
+
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	var container_ids []string
+	var container_names []string
+
+	for _, container := range containers {
+		container_ids = append(container_ids, container.ID)
+		container_names = append(container_names, container.Names[0])
 	}
 
 	if err := ui.Init(); err != nil {
@@ -21,13 +31,20 @@ func main() {
 	}
 	defer ui.Close()
 
-	docker_ps := ui.NewPar(string(stdout))
-	docker_ps.Height = 20
-	docker_ps.Width = 100
-	docker_ps.Y = 0
-	docker_ps.Border = false
+	table_rows := [][]string{
+		[]string{"IDs", "Container name"},
+		container_ids,
+		container_names,
+	}
 
-	ui.Render(docker_ps)
+	docker_ps_table := ui.NewTable()
+	docker_ps_table.Rows = table_rows
+	docker_ps_table.Y = 0
+	docker_ps_table.X = 0
+	docker_ps_table.Width = 200
+	docker_ps_table.Height = 200
+
+	ui.Render(docker_ps_table)
 
 	ui.Handle("/sys/kbd/q", func(ui.Event) {
 		ui.StopLoop()
